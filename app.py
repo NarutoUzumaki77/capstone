@@ -31,9 +31,9 @@ def create_app(test_config=None):
     @app.route('/actors/<int:actor_id>')
     def get_actor_by_id(actor_id):
         actor = db.session.query(Actors).filter(Actors.id == actor_id).first()
-        formatted_msg = []
+        formatted_msg = None
         if actor:
-            formatted_msg = [actor.format()]
+            formatted_msg = actor.format()
         return jsonify({
             'success': True,
             'actors': formatted_msg
@@ -67,9 +67,9 @@ def create_app(test_config=None):
     @app.route('/movies/<int:movies_id>')
     def get_movies_by_id(movies_id):
         movie = db.session.query(Movies).filter(Movies.id == movies_id).first()
-        formatted_msg = []
+        formatted_msg = None
         if movie:
-            formatted_msg = [movie.format()]
+            formatted_msg = movie.format()
         return jsonify({
             'success': True,
             'movies': formatted_msg
@@ -91,9 +91,9 @@ def create_app(test_config=None):
     @app.route('/casts/<int:cast_id>')
     def get_casts_by_id(cast_id):
         cast = db.session.query(Casts).filter(Casts.id == cast_id).first()
-        formatted_msg = []
+        formatted_msg = None
         if cast:
-            formatted_msg = [cast.format()]
+            formatted_msg = cast.format()
         return jsonify({
             'success': True,
             'casts': formatted_msg
@@ -112,9 +112,9 @@ def create_app(test_config=None):
     def get_starring_by_id(starring_id):
         star = db.session.query(Starring).filter(
             Starring.id == starring_id).first()
-        formatted_msg = []
+        formatted_msg = None
         if star:
-            formatted_msg = [star.format()]
+            formatted_msg = star.format()
         return jsonify({
             'success': True,
             'casts': formatted_msg
@@ -127,6 +127,7 @@ def create_app(test_config=None):
         request_body = request.json
         movie = Movies(
             title=request_body.get('title'),
+            # Todo validate date format
             release_date=datetime(2021, 3, 2),
             description=request_body.get('description')
         )
@@ -138,7 +139,6 @@ def create_app(test_config=None):
 
     @app.route('/cast', methods=['POST'])
     def add_cast():
-        # movie = db.session.query(Movies).filter(Movies.id == movie_id).all()
         request_body = request.json
         cast = Casts(request_body.get('movie_id'))
         db.session.add(cast)

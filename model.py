@@ -34,9 +34,17 @@ class Movies(db.Model):
         return {
             'id': self.id,
             'title': self.title,
-            'release_date': self.release_date,
+            'release_date': self.get_date_format(),
             'description': self.description
         }
+
+    def get_date_format(self):
+        date = self.release_date
+        _format = str(date.strftime("%a"))
+        _format += ' ' + str(date.strftime("%b"))
+        _format += ' ' + str(date.strftime("%d"))
+        _format += ' ' + str(date.strftime("%Y"))
+        return _format
 
 
 class Actors(db.Model):
