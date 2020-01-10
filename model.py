@@ -1,7 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
 
-# from sqlalchemy import Column, String, create_engine
-
 database_path = 'postgres://gilbertnwankwo@localhost:5432/capstone'
 
 db = SQLAlchemy()
@@ -32,9 +30,13 @@ class Movies(db.Model):
         return f'<Movies {self.id}, {self.title}, {self.release_date}, ' \
                f'{self.description}>'
 
-    def insert(self):
-        db.session.add(self)
-        db.session.commit()
+    def format(self):
+        return {
+            'id': self.id,
+            'title': self.title,
+            'release_date': self.release_date,
+            'description': self.description
+        }
 
 
 class Actors(db.Model):
@@ -56,6 +58,15 @@ class Actors(db.Model):
         return f'<Actors {self.id}, {self.name}, {self.age}, {self.gender},' \
                f' {self.nationality}>'
 
+    def format(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'age': self.age,
+            'gender': self.gender,
+            'nationality': self.nationality
+        }
+
 
 class Casts(db.Model):
     __tablename__ = 'casts'
@@ -69,6 +80,12 @@ class Casts(db.Model):
 
     def __repr__(self):
         return f'<Casts {self.id}, {self.movie_id}>'
+
+    def format(self):
+        return {
+            'id': self.id,
+            'movie_id': self.movie_id
+        }
 
 
 class Starring(db.Model):
@@ -85,3 +102,10 @@ class Starring(db.Model):
 
     def __repr__(self):
         return f'<Starring {self.id}, {self.cast_id}, {self.actor_id}>'
+
+    def format(self):
+        return {
+            'id': self.id,
+            'cast_id': self.cast_id,
+            'actor_id': self.actor_id
+        }
