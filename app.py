@@ -120,8 +120,6 @@ def create_app(test_config=None):
             'message': formatted_msg
         }), 200
 
-    # Todo create placeholder for POST actor, cast and starring
-
     @app.route('/movies', methods=['POST'])
     def create_movie():
         request_body = request.json
@@ -211,6 +209,43 @@ def create_app(test_config=None):
         return jsonify({
             'success': True
         }), 201
+
+    @app.route('/movies/<movie_id>', methods=['DELETE'])
+    def delete_movie(movie_id):
+        if not record_exist(Movies, movie_id):
+            return abort(400, "Movie id does not exist")
+        movie = db.session.query(Movies).filter(Movies.id == movie_id).first()
+        db.session.delete(movie)
+        db.session.commit()
+        return '', 204
+
+    @app.route('/actors/<actor_id>', methods=['DELETE'])
+    def delete_actor(actor_id):
+        if not record_exist(Actors, actor_id):
+            return abort(400, "Actor id does not exist")
+        actor = db.session.query(Actors).filter(Actors.id == actor_id).first()
+        db.session.delete(actor)
+        db.session.commit()
+        return '', 204
+
+    @app.route('/casts/<cast_id>', methods=['DELETE'])
+    def delete_cast(cast_id):
+        if not record_exist(Actors, cast_id):
+            return abort(400, "Cast id does not exist")
+        cast = db.session.query(Actors).filter(Actors.id == cast_id).first()
+        db.session.delete(cast)
+        db.session.commit()
+        return '', 204
+
+    @app.route('/stars/<star_id>', methods=['DELETE'])
+    def delete_cast(star_id):
+        if not record_exist(Starring, star_id):
+            return abort(400, "Star id does not exist")
+        star = db.session.query(Starring).filter(Starring.id ==
+                                                 star_id).first()
+        db.session.delete(star)
+        db.session.commit()
+        return '', 204
 
     @app.errorhandler(400)
     def not_found(error):

@@ -37,3 +37,11 @@
 11. create star, actor already assigned to cast
 
 12. create star successfully
+
+13. Delete actor record, should also delete star records for actor
+
+14. Delete movie, should also delete cast id, also delete all star record with cast id
+
+15. Delete cast id, should also delete all star record with cast id
+
+16. Delete star record
