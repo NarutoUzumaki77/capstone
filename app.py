@@ -1,8 +1,9 @@
-import os
+
 from flask import Flask, request, abort, jsonify
 from flask_cors import CORS
 from model import *
 from datetime import datetime
+from sqlalchemy.exc import IntegrityError
 
 
 def create_app(test_config=None):
@@ -25,7 +26,7 @@ def create_app(test_config=None):
         formatted_msg = [actor.format() for actor in actors]
         return jsonify({
             'success': True,
-            'actors': formatted_msg
+            'message': formatted_msg
         }), 200
 
     @app.route('/actors/<int:actor_id>')
@@ -36,7 +37,7 @@ def create_app(test_config=None):
             formatted_msg = actor.format()
         return jsonify({
             'success': True,
-            'actors': formatted_msg
+            'message': formatted_msg
         }), 200
 
     @app.route('/actors/nationality/<string:nationality>')
@@ -48,7 +49,7 @@ def create_app(test_config=None):
             formatted_msg = [actor.format() for actor in actors]
         return jsonify({
             'success': True,
-            'actors': formatted_msg
+            'message': formatted_msg
         }), 200
 
     @app.route('/actors/<int:actor_id>/movies')
@@ -61,7 +62,7 @@ def create_app(test_config=None):
         formatted_msg = [movie.format() for movie in movies]
         return jsonify({
             'success': True,
-            'movies': formatted_msg
+            'message': formatted_msg
         }), 200
 
     @app.route('/movies/<int:movies_id>')
@@ -72,7 +73,7 @@ def create_app(test_config=None):
             formatted_msg = movie.format()
         return jsonify({
             'success': True,
-            'movies': formatted_msg
+            'message': formatted_msg
         }), 200
 
     @app.route('/movies/<int:movies_id>/casts/<int:cast_id>')
@@ -85,7 +86,7 @@ def create_app(test_config=None):
         formatted_msg = [cast.format() for cast in casts]
         return jsonify({
             'success': True,
-            'casts': formatted_msg
+            'message': formatted_msg
         }), 200
 
     @app.route('/casts/<int:cast_id>')
@@ -96,7 +97,7 @@ def create_app(test_config=None):
             formatted_msg = cast.format()
         return jsonify({
             'success': True,
-            'casts': formatted_msg
+            'message': formatted_msg
         }), 200
 
     @app.route('/starring')
@@ -105,7 +106,7 @@ def create_app(test_config=None):
         formatted_msg = [star.format() for star in starrings]
         return jsonify({
             'success': True,
-            'casts': formatted_msg
+            'message': formatted_msg
         }), 200
 
     @app.route('/starring/<int:starring_id>')
@@ -117,19 +118,25 @@ def create_app(test_config=None):
             formatted_msg = star.format()
         return jsonify({
             'success': True,
-            'casts': formatted_msg
+            'message': formatted_msg
         }), 200
 
-    # Todo create placeholder for POST movies, actor, cast and starring
+    # Todo create placeholder for POST actor, cast and starring
 
     @app.route('/movies', methods=['POST'])
     def create_movie():
         request_body = request.json
+        release_date = request_body.get('release_date')
+        try:
+            date_parts = release_date.split("/")
+            release_date = datetime(int(date_parts[0]), int(date_parts[1]),
+                                    int(date_parts[2]))
+        except:
+            return abort(400, "Error in release date field format")
         movie = Movies(
             title=request_body.get('title'),
-            # Todo validate date format
-            release_date=datetime(2021, 3, 2),
-            description=request_body.get('description')
+            description=request_body.get('description'),
+            release_date=release_date
         )
         db.session.add(movie)
         db.session.commit()
@@ -137,15 +144,31 @@ def create_app(test_config=None):
             'success': True
         }), 201
 
-    @app.route('/cast', methods=['POST'])
-    def add_cast():
+    @app.route('/casts', methods=['POST'])
+    def create_movie_casts():
         request_body = request.json
-        cast = Casts(request_body.get('movie_id'))
+        movie_id = request_body.get('movie_id')
+        if db.session.query(Movies).filter(
+                Movies.id == movie_id).first() is None:
+            return abort(400,
+                         "Movie id is invalid, please enter a valid Movie id")
+        cast = Casts(movie_id=movie_id)
         db.session.add(cast)
-        db.session.commit()
+        try:
+            db.session.commit()
+        except IntegrityError:
+            return abort(400, "Duplicate key Violation, Movie id {} already "
+                              "assigned to a cast".format(movie_id))
         return jsonify({
             'success': True
         }), 201
+
+    @app.errorhandler(400)
+    def not_found(error):
+        return jsonify({
+            "success": False,
+            "message": str(error.description)
+        }), 400
 
     return app
 

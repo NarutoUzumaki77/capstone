@@ -1,0 +1,25 @@
+1. create movies
+    body: {
+	    "title": "The Rise of Skywalker",
+	    "description": "The surviving members of the resistance face the First Order once again, and the legendary conflict between the Jedi and the Sith reaches its peak bringing the Skywalker saga to its end.",
+	    "release_date": "2021/3/5"
+    }
+
+2. negative test create movies, wrong date format
+    body: {
+        "title": "The Rise of Skywalker",
+        "description": "The surviving members of the resistance face the First Order once again, and the legendary conflict between the Jedi and the Sith reaches its peak bringing the Skywalker saga to its end.",
+        "release_date": "2021/3/a"
+    }
+
+3. create casts
+    body: {
+        "movie_id": 1 # valid movie_id
+    }
+
+4. create casts fails with invalid movie_id
+    body: {
+        "movie_id": 100000000
+    }
+
+5. create casts for an existing movie_id
