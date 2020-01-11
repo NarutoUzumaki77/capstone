@@ -1,4 +1,4 @@
-1. create movies
+1. create movies successfully
     body: {
 	    "title": "The Rise of Skywalker",
 	    "description": "The surviving members of the resistance face the First Order once again, and the legendary conflict between the Jedi and the Sith reaches its peak bringing the Skywalker saga to its end.",
@@ -12,7 +12,7 @@
         "release_date": "2021/3/a"
     }
 
-3. create casts
+3. create casts successfully
     body: {
         "movie_id": 1 # valid movie_id
     }
@@ -23,3 +23,17 @@
     }
 
 5. create casts for an existing movie_id
+
+6. create actor successfully
+
+7. create actor wrong gender... error expected
+
+8. create actor use alphabet for age
+
+9. create star, actor do not exist
+
+10. create star, cast, does not exist
+
+11. create star, actor already assigned to cast
+
+12. create star successfully

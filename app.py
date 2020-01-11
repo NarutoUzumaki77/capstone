@@ -1,4 +1,3 @@
-
 from flask import Flask, request, abort, jsonify
 from flask_cors import CORS
 from model import *
@@ -148,8 +147,7 @@ def create_app(test_config=None):
     def create_movie_casts():
         request_body = request.json
         movie_id = request_body.get('movie_id')
-        if db.session.query(Movies).filter(
-                Movies.id == movie_id).first() is None:
+        if not record_exist(Movies, movie_id):
             return abort(400,
                          "Movie id is invalid, please enter a valid Movie id")
         cast = Casts(movie_id=movie_id)
@@ -163,6 +161,57 @@ def create_app(test_config=None):
             'success': True
         }), 201
 
+    @app.route('/actors', methods=['POST'])
+    def create_actor():
+        try:
+            age = int(request.json.get('age'))
+            gender = str(request.json.get('gender'))
+            if gender != 'male' or gender != 'female':
+                raise NameError
+        except ValueError:
+            abort(400, "Invalid literal {} for Int() age field".format(age))
+        except NameError:
+            abort(400, "Invalid value {} for gender, acceptable values are "
+                       "male/female".format(gender))
+
+        actor = Actors(
+            name=request.json.get('name'),
+            age=age,
+            gender=gender,
+            nationality=request.json.get('nationality')
+        )
+        db.session.add(actor)
+        db.session.commit()
+
+        return jsonify({
+            'success': True
+        }), 201
+
+    @app.route('/stars', methods=['POST'])
+    def assign_actor_to_movie():
+        cast_id = request.json.get('cast_id')
+        actor_id = request.json.get('actor')
+        if not record_exist(Casts, cast_id):
+            return abort(400, "Cast id does not exist")
+        if not record_exist(Actors, actor_id):
+            return abort(400, "Actor id does not exist")
+
+        star = db.session.query(Starring).filter(Starring.cast_id == cast_id)\
+            .filter(Starring.actor_id == actor_id)
+        if star:
+            return abort(400, "Actor is already assigned to Cast")
+
+        star = Starring(
+            cast_id=cast_id,
+            actor_id=actor_id
+        )
+        db.session.add(star)
+        db.session.commit()
+
+        return jsonify({
+            'success': True
+        }), 201
+
     @app.errorhandler(400)
     def not_found(error):
         return jsonify({
@@ -170,6 +219,9 @@ def create_app(test_config=None):
             "message": str(error.description)
         }), 400
 
+    def record_exist(db_table, record_id):
+        return db.session.query(db_table).filter(
+            db_table.id == record_id).first() is None
     return app
 
 
