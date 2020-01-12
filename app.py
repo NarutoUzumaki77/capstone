@@ -53,8 +53,20 @@ def create_app(test_config=None):
 
     @app.route('/actors/<int:actor_id>/movies')
     def get_all_movies_with_actor(actor_id):
-        # Todo get_all_movies_with_actor
-        pass
+        movies_title = []
+        if not record_exist(Actors, actor_id):
+            abort(400, "Actor id does not exist")
+        starrings = db.session.query(Starring).filter(
+            Starring.actor_id == actor_id)
+        cast_ids = [cast_id for cast_id in starrings.cast_id]
+        for cast_id in cast_ids:
+            movie = db.session.query(Movies, Casts).join(Casts).get(cast_id)
+            movies_title.append(movie.title)
+
+        return jsonify({
+            'success': True,
+            'message': movies_title
+        })
 
     @app.route('/movies')
     def get_movies():
@@ -76,10 +88,29 @@ def create_app(test_config=None):
             'message': formatted_msg
         }), 200
 
-    @app.route('/movies/<int:movies_id>/casts/<int:cast_id>')
-    def get_movie_casts(movies_id, cast_id):
-        # Todo get all movie cast
-        pass
+    @app.route('/movies/<int:movies_id>/casts')
+    def get_movie_casts(movie_id):
+        if not record_exist(Movies, movie_id):
+            abort(400, "Movie id does not exist")
+
+        cast = db.session.query(Casts).filter(
+            Casts.movie_id == movie_id).first()
+        if cast is None:
+            return abort(404)
+        cast_id = cast.id
+
+        stars = db.session.query(Starring, Casts).join(Casts).filter(
+            Casts.movie_id == movie_id).filter(Starring.cast_id ==
+                                               cast_id).all()
+        actor_names = []
+        for star in stars:
+            actor = db.session.query(Actors).get(star.actor_id)
+            actor_names.append(actor.name)
+
+        return jsonify({
+            'success': True,
+            'message': actor_names
+        }), 200
 
     @app.route('/casts')
     def get_casts():
