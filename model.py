@@ -19,7 +19,8 @@ class Movies(db.Model):
     title = db.Column(db.String(150), nullable=False)
     release_date = db.Column(db.Date, nullable=True)
     description = db.Column(db.String(500), nullable=False)
-    cast = db.relationship('Casts', backref='movies_ref')
+    cast = db.relationship('Casts', backref='movies_ref',
+                           cascade="all, delete-orphan")
 
     def __init__(self, title, release_date, description):
         self.title = title
@@ -82,7 +83,8 @@ class Casts(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     movie_id = db.Column(db.Integer, db.ForeignKey('movies.id'),
                          nullable=False, unique=True)
-    starring = db.relationship('Starring', backref='casts_ref')
+    starring = db.relationship('Starring', backref='casts_ref',
+                               cascade="all, delete-orphan")
 
     def __init__(self, movie_id):
         self.movie_id = movie_id
