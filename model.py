@@ -54,7 +54,8 @@ class Actors(db.Model):
     age = db.Column(db.Integer, nullable=False)
     gender = db.Column(db.String, nullable=False)
     nationality = db.Column(db.String(150), nullable=False)
-    starring = db.relationship('Starring', backref='actors_ref')
+    starring = db.relationship('Starring', backref='actors_ref',
+                               cascade="all, delete-orphan")
 
     def __init__(self, name, age, gender, nationality):
         self.name = name
