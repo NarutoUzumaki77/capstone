@@ -14,7 +14,7 @@
 
 3. create casts successfully
     body: {
-        "movie_id": 1 # valid movie_id
+        "movie_id": 1
     }
 
 4. create casts fails with invalid movie_id
@@ -22,13 +22,29 @@
         "movie_id": 100000000
     }
 
-5. create casts for an existing movie_id
+5. create casts for an existing movie_id => Duplicate movie violation, 400 response
+    body: {
+        "movie_id": 1
+    }
 
 6. create actor successfully
+    body: {
+        "name": "Michelle Forbes",
+        "age": 55,
+        "gender": "female",
+        "nationality": "United States"
+    }
 
 7. create actor wrong gender... error expected
+    body: {
+        "name": "Michelle Forbes",
+        "age": 55,
+        "gender": "femle",
+        "nationality": "United States"
+    }
 
 8. create actor use alphabet for age
+a. create actor age is 0 or less than 0
 
 9. create star, actor do not exist
 

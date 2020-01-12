@@ -88,7 +88,7 @@ def create_app(test_config=None):
             'message': formatted_msg
         }), 200
 
-    @app.route('/movies/<int:movies_id>/casts')
+    @app.route('/movies/<int:movies_id>/cast')
     def get_movie_casts(movie_id):
         if not record_exist(Movies, movie_id):
             abort(400, "Movie id does not exist")
@@ -132,7 +132,7 @@ def create_app(test_config=None):
             'message': formatted_msg
         }), 200
 
-    @app.route('/starring')
+    @app.route('/stars')
     def get_starring():
         starrings = db.session.query(Starring).all()
         formatted_msg = [star.format() for star in starrings]
@@ -141,7 +141,7 @@ def create_app(test_config=None):
             'message': formatted_msg
         }), 200
 
-    @app.route('/starring/<int:starring_id>')
+    @app.route('/stars/<int:starring_id>')
     def get_starring_by_id(starring_id):
         star = db.session.query(Starring).get(starring_id)
         formatted_msg = None
@@ -194,14 +194,17 @@ def create_app(test_config=None):
     @app.route('/actors', methods=['POST'])
     def create_actor():
         try:
-            age = int(request.json.get('age'))
+            age = request.json.get('age')
+            age = int(age)
             gender = str(request.json.get('gender'))
-            if gender != 'male' or gender != 'female':
+            if gender != 'male' and gender != 'female':
                 raise NameError
+            if age <= 0:
+                raise ValueError
         except ValueError:
-            abort(400, "Invalid literal {} for Int() age field".format(age))
+            abort(400, "Invalid value '{}' for Int() age field".format(age))
         except NameError:
-            abort(400, "Invalid value {} for gender, acceptable values are "
+            abort(400, "Invalid value '{}' for gender, acceptable values are "
                        "male/female".format(gender))
 
         actor = Actors(
@@ -220,14 +223,14 @@ def create_app(test_config=None):
     @app.route('/stars', methods=['POST'])
     def assign_actor_to_movie():
         cast_id = request.json.get('cast_id')
-        actor_id = request.json.get('actor')
+        actor_id = request.json.get('actor_id')
         if not record_exist(Casts, cast_id):
             return abort(400, "Cast id does not exist")
         if not record_exist(Actors, actor_id):
             return abort(400, "Actor id does not exist")
 
         star = db.session.query(Starring).filter(Starring.cast_id == cast_id)\
-            .filter(Starring.actor_id == actor_id)
+            .filter(Starring.actor_id == actor_id).all()
         if star:
             return abort(400, "Actor is already assigned to Cast")
 
@@ -242,7 +245,7 @@ def create_app(test_config=None):
             'success': True
         }), 201
 
-    @app.route('/movies/<movie_id>', methods=['DELETE'])
+    @app.route('/movies/<int:movie_id>', methods=['DELETE'])
     def delete_movie(movie_id):
         if not record_exist(Movies, movie_id):
             return abort(400, "Movie id does not exist")
@@ -251,7 +254,7 @@ def create_app(test_config=None):
         db.session.commit()
         return '', 204
 
-    @app.route('/actors/<actor_id>', methods=['DELETE'])
+    @app.route('/actors/<int:actor_id>', methods=['DELETE'])
     def delete_actor(actor_id):
         if not record_exist(Actors, actor_id):
             return abort(400, "Actor id does not exist")
@@ -260,7 +263,7 @@ def create_app(test_config=None):
         db.session.commit()
         return '', 204
 
-    @app.route('/casts/<cast_id>', methods=['DELETE'])
+    @app.route('/casts/<int:cast_id>', methods=['DELETE'])
     def delete_cast(cast_id):
         if not record_exist(Casts, cast_id):
             return abort(400, "Cast id does not exist")
@@ -269,8 +272,8 @@ def create_app(test_config=None):
         db.session.commit()
         return '', 204
 
-    @app.route('/stars/<star_id>', methods=['DELETE'])
-    def delete_cast(star_id):
+    @app.route('/stars/<int:star_id>', methods=['DELETE'])
+    def delete_star(star_id):
         if not record_exist(Starring, star_id):
             return abort(400, "Star id does not exist")
         star = db.session.query(Starring).get(star_id)
@@ -330,7 +333,7 @@ def create_app(test_config=None):
         }), 200
 
     @app.route('/casts/<cast_id>', methods=['PATCH'])
-    def update_actors(cast_id):
+    def update_casts(cast_id):
         request_body = request.json
         movie_id = request_body.get('movie_id')
         if not record_exist(Movies, movie_id):
@@ -422,7 +425,7 @@ def create_app(test_config=None):
     #     }), status_code
 
     def record_exist(db_table, record_id):
-        return db.session.query(db_table).get(record_id) is None
+        return db.session.query(db_table).get(record_id) is not None
 
     return app
 
