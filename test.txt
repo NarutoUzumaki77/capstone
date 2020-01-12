@@ -61,3 +61,9 @@ a. create actor age is 0 or less than 0
 15. Delete cast id, should also delete all star record with cast id
 
 16. Delete star record
+
+17. get star by nationality
+
+18. get all movies with actor
+
+19. get casts in a movie
