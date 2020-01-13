@@ -25,7 +25,7 @@ def create_app(test_config=None):
         formatted_msg = [actor.format() for actor in actors]
         return jsonify({
             'success': True,
-            'message': formatted_msg
+            'actors': formatted_msg
         }), 200
 
     @app.route('/actors/<int:actor_id>')
@@ -36,7 +36,7 @@ def create_app(test_config=None):
             formatted_msg = actor.format()
         return jsonify({
             'success': True,
-            'message': formatted_msg
+            'actor': formatted_msg
         }), 200
 
     @app.route('/actors/nationality/<string:nationality>')
@@ -48,7 +48,7 @@ def create_app(test_config=None):
             formatted_msg = [actor.format() for actor in actors]
         return jsonify({
             'success': True,
-            'message': formatted_msg
+            'actors': formatted_msg
         }), 200
 
     @app.route('/actors/<int:actor_id>/movies')
@@ -66,7 +66,7 @@ def create_app(test_config=None):
 
         return jsonify({
             'success': True,
-            'message': movies_title
+            'movies': movies_title
         })
 
     @app.route('/movies')
@@ -75,7 +75,7 @@ def create_app(test_config=None):
         formatted_msg = [movie.format() for movie in movies]
         return jsonify({
             'success': True,
-            'message': formatted_msg
+            'movies': formatted_msg
         }), 200
 
     @app.route('/movies/<int:movies_id>')
@@ -86,7 +86,7 @@ def create_app(test_config=None):
             formatted_msg = movie.format()
         return jsonify({
             'success': True,
-            'message': formatted_msg
+            'movie': formatted_msg
         }), 200
 
     @app.route('/movies/<int:movie_id>/cast')
@@ -113,7 +113,7 @@ def create_app(test_config=None):
 
         return jsonify({
             'success': True,
-            'movie title': movie_title,
+            'movie': movie_title,
             'casts': actor_names
         }), 200
 
@@ -123,7 +123,7 @@ def create_app(test_config=None):
         formatted_msg = [cast.format() for cast in casts]
         return jsonify({
             'success': True,
-            'message': formatted_msg
+            'casts': formatted_msg
         }), 200
 
     @app.route('/casts/<int:cast_id>')
@@ -134,7 +134,7 @@ def create_app(test_config=None):
             formatted_msg = cast.format()
         return jsonify({
             'success': True,
-            'message': formatted_msg
+            'cast': formatted_msg
         }), 200
 
     @app.route('/stars')
@@ -143,7 +143,7 @@ def create_app(test_config=None):
         formatted_msg = [star.format() for star in starrings]
         return jsonify({
             'success': True,
-            'message': formatted_msg
+            'stars': formatted_msg
         }), 200
 
     @app.route('/stars/<int:starring_id>')
@@ -154,7 +154,7 @@ def create_app(test_config=None):
             formatted_msg = star.format()
         return jsonify({
             'success': True,
-            'message': formatted_msg
+            'star': formatted_msg
         }), 200
 
     @app.route('/movies', methods=['POST'])
@@ -292,14 +292,15 @@ def create_app(test_config=None):
             return abort(400, "Actor id does not exist")
         actor = db.session.query(Actors).get(actor_id)
         try:
-            age = int(request.json.get('age'))
+            age = request.json.get('age')
+            age = int(age)
             gender = str(request.json.get('gender'))
-            if gender != 'male' or gender != 'female':
+            if gender != 'male' and gender != 'female':
                 raise NameError
         except ValueError:
-            abort(400, "Invalid literal {} for Int() age field".format(age))
+            abort(400, "Invalid value '{}' for Int() age field".format(age))
         except NameError:
-            abort(400, "Invalid value {} for gender, acceptable values are "
+            abort(400, "Invalid value '{}' for gender, acceptable values are "
                        "male/female".format(gender))
 
         actor.name = request.json.get('name')
