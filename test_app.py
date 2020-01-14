@@ -78,30 +78,50 @@ class AppTestCase(unittest.TestCase):
             self.db.session.commit()
 
     def test_create_movie_record(self):
+        headers = {"Authorization": "Bearer {}".format(
+            jwt.executive_producer)}
         res = self.client().post('/movies', json={
             "title": "1917",
             "description": "During World War I, two British soldiers -- "
                            "Lance Cpl. Schofield and Lance Cpl. Blake -- "
                            "receive seemingly impossible orders",
             "release_date": "2020/1/12"
-        })
+        }, headers=headers)
         data = json.loads(res.data)
-        self.assertEqual(res.status_code, 201)
-        self.assertEqual(data['success'], True)
+        self.assertEqual(201, res.status_code)
+        self.assertEqual(True, data['success'])
+
+    def test_create_movie_wrong_auth(self):
+        headers = {"Authorization": "Bearer {}".format(
+            jwt.casting_director)}
+        res = self.client().post('/movies', json={
+            "title": "1917",
+            "description": "During World War I, two British soldiers -- "
+                           "Lance Cpl. Schofield and Lance Cpl. Blake -- "
+                           "receive seemingly impossible orders",
+            "release_date": "2020/1/12"
+        }, headers=headers)
+        data = json.loads(res.data)
+        self.assertEqual(403, res.status_code)
+        self.assertEqual("Permission Denied", data['message'])
 
     def test_create_movie_wrong_release_date(self):
+        headers = {"Authorization": "Bearer {}".format(
+            jwt.executive_producer)}
         res = self.client().post('/movies', json={
             "title": "1917",
             "description": "During World War I, two British soldiers -- "
                            "Lance Cpl. Schofield and Lance Cpl. Blake -- "
                            "receive seemingly impossible orders",
             "release_date": "2020/1/e"
-        })
+        }, headers=headers)
         data = json.loads(res.data)
-        self.assertEqual(res.status_code, 400)
-        self.assertEqual(data['success'], False)
+        self.assertEqual(400, res.status_code)
+        self.assertEqual(False, data['success'])
 
     def test_create_cast(self):
+        headers = {"Authorization": "Bearer {}".format(
+            jwt.executive_producer)}
         with self.app.app_context():
             self.db = SQLAlchemy()
             self.db.init_app(self.app)
@@ -110,22 +130,40 @@ class AppTestCase(unittest.TestCase):
         movie_id = movie.id
         res = self.client().post('/casts', json={
             "movie_id": movie_id
-        })
+        }, headers=headers)
         data = json.loads(res.data)
-        self.assertEqual(res.status_code, 201)
-        self.assertEqual(data['success'], True)
+        self.assertEqual(201, res.status_code)
+        self.assertEqual(True, data['success'])
+
+    def test_create_cast_wrong_auth(self):
+        headers = {"Authorization": "Bearer {}".format(
+            jwt.casting_director)}
+        with self.app.app_context():
+            self.db = SQLAlchemy()
+            self.db.init_app(self.app)
+            movie = self.db.session.query(Movies).filter(Movies.title ==
+                                                         "Treadstone").first()
+        movie_id = movie.id
+        res = self.client().post('/casts', json={
+            "movie_id": movie_id
+        }, headers=headers)
+        self.assertEqual(403, res.status_code)
 
     def test_create_cast_wrong_movie_id(self):
+        headers = {"Authorization": "Bearer {}".format(
+            jwt.executive_producer)}
         res = self.client().post('/casts', json={
             "movie_id": 100000000000
-        })
+        }, headers=headers)
         data = json.loads(res.data)
-        self.assertEqual(res.status_code, 400)
-        self.assertEqual(data['success'], False)
-        self.assertEqual(data['message'], "Movie id is invalid, please enter "
-                                          "a valid Movie id")
+        self.assertEqual(400, res.status_code)
+        self.assertEqual(False, data['success'])
+        self.assertEqual("Movie id is invalid, please enter a valid Movie id",
+                         data['message'])
 
     def test_create_cast_duplicate_key_violation(self):
+        headers = {"Authorization": "Bearer {}".format(
+            jwt.executive_producer)}
         with self.app.app_context():
             self.db = SQLAlchemy()
             self.db.init_app(self.app)
@@ -135,40 +173,44 @@ class AppTestCase(unittest.TestCase):
         movie_id = movie.id
         res = self.client().post('/casts', json={
             "movie_id": movie_id
-        })
+        }, headers=headers)
         data = json.loads(res.data)
-        self.assertEqual(res.status_code, 201)
-        self.assertEqual(data['success'], True)
+        self.assertEqual(201, res.status_code)
+        self.assertEqual(True, data['success'])
 
         res = self.client().post('/casts', json={
             "movie_id": movie_id
-        })
+        }, headers=headers)
         data = json.loads(res.data)
-        self.assertEqual(res.status_code, 400)
-        self.assertEqual(data['success'], False)
-        self.assertEqual(data['message'], "Duplicate key Violation, Movie id "
-                                          "{} already assigned to a cast"
-                         .format(movie_id))
+        self.assertEqual(400, res.status_code)
+        self.assertEqual(False, data['success'])
+        self.assertEqual("Duplicate key Violation, Movie id {} "
+                         "already assigned to a cast".format(movie_id),
+                         data['message'])
 
     def test_create_actor(self):
+        headers = {"Authorization": "Bearer {}".format(
+            jwt.casting_director)}
         res = self.client().post('/actors', json={
             "name": "Gilbert Forbes",
             "age": 32,
             "gender": "male",
             "nationality": "Nigeria"
-        })
+        }, headers=headers)
         data = json.loads(res.data)
         self.assertEqual(res.status_code, 201)
         self.assertEqual(data['success'], True)
 
     def test_create_actor_wrong_gender(self):
+        headers = {"Authorization": "Bearer {}".format(
+            jwt.executive_producer)}
         gender = "fmale"
         res = self.client().post('/actors', json={
             "name": "Gilbert Forbes",
             "age": 32,
             "gender": gender,
             "nationality": "Nigeria"
-        })
+        }, headers=headers)
         data = json.loads(res.data)
         self.assertEqual(res.status_code, 400)
         self.assertEqual(data['success'], False)
@@ -177,13 +219,15 @@ class AppTestCase(unittest.TestCase):
                          .format(gender))
 
     def test_create_actor_alpha_age(self):
+        headers = {"Authorization": "Bearer {}".format(
+            jwt.executive_producer)}
         age = "er"
         res = self.client().post('/actors', json={
             "name": "Gilbert Forbes",
             "age": age,
             "gender": "male",
             "nationality": "Nigeria"
-        })
+        }, headers=headers)
         data = json.loads(res.data)
         self.assertEqual(res.status_code, 400)
         self.assertEqual(data['success'], False)
@@ -191,24 +235,40 @@ class AppTestCase(unittest.TestCase):
                                           "field".format(age))
 
     def test_create_actor_negative_age(self):
+        headers = {"Authorization": "Bearer {}".format(
+            jwt.executive_producer)}
         age = -34
         res = self.client().post('/actors', json={
             "name": "Gilbert Forbes",
             "age": age,
             "gender": "male",
             "nationality": "Nigeria"
-        })
+        }, headers=headers)
         data = json.loads(res.data)
         self.assertEqual(res.status_code, 400)
         self.assertEqual(data['success'], False)
         self.assertEqual(data['message'], "Invalid value '{}' for Int() age "
                                           "field".format(age))
 
+    def test_create_actor_wrong_auth(self):
+        headers = {"Authorization": "Bearer {}".format(
+            jwt.casting_assistance)}
+        age = 34
+        res = self.client().post('/actors', json={
+            "name": "Gilbert Forbes",
+            "age": age,
+            "gender": "male",
+            "nationality": "Nigeria"
+        }, headers=headers)
+        self.assertEqual(403, res.status_code)
+
     def test_create_star_actor_does_not_exist(self):
+        headers = {"Authorization": "Bearer {}".format(
+            jwt.executive_producer)}
         movie = self.get_movie()
         res = self.client().post('/casts', json={
             "movie_id": movie.id
-        })
+        }, headers=headers)
         if res.status_code != 201:
             self.skipTest("Unable to create cast record, test requirement "
                           "failed")
@@ -216,29 +276,33 @@ class AppTestCase(unittest.TestCase):
         res = self.client().post('/stars', json={
             "cast_id": cast.id,
             "actor_id": 10000000000
-        })
+        }, headers=headers)
         data = json.loads(res.data)
         self.assertEqual(res.status_code, 400)
         self.assertEqual(data['success'], False)
         self.assertEqual(data['message'], "Actor id does not exist")
 
     def test_create_star_cast_does_not_exist(self):
+        headers = {"Authorization": "Bearer {}".format(
+            jwt.executive_producer)}
         actor = self.get_actor()
         res = self.client().post('/stars', json={
             "cast_id": 100000000,
             "actor_id": actor.id
-        })
+        }, headers=headers)
         data = json.loads(res.data)
         self.assertEqual(res.status_code, 400)
         self.assertEqual(data['success'], False)
         self.assertEqual(data['message'], "Cast id does not exist")
 
     def test_create_star_actor_already_assigned_to_cast(self):
+        headers = {"Authorization": "Bearer {}".format(
+            jwt.executive_producer)}
         movie = self.get_movie()
         actor = self.get_actor()
         res = self.client().post('/casts', json={
             "movie_id": movie.id
-        })
+        }, headers=headers)
         if res.status_code != 201:
             self.skipTest("Unable to create cast record, test requirement "
                           "failed")
@@ -246,7 +310,7 @@ class AppTestCase(unittest.TestCase):
         res = self.client().post('/stars', json={
             "cast_id": cast.id,
             "actor_id": actor.id
-        })
+        }, headers=headers)
         if res.status_code != 201:
             self.skipTest("Unable to assign actor to cast, test requirement "
                           "failed")
@@ -254,18 +318,20 @@ class AppTestCase(unittest.TestCase):
         res = self.client().post('/stars', json={
             "cast_id": cast.id,
             "actor_id": actor.id
-        })
+        }, headers=headers)
         data = json.loads(res.data)
         self.assertEqual(res.status_code, 400)
         self.assertEqual(data['success'], False)
         self.assertEqual(data['message'], "Actor is already assigned to Cast")
 
     def test_create_star(self):
+        headers = {"Authorization": "Bearer {}".format(
+            jwt.executive_producer)}
         movie = self.get_movie()
         actor = self.get_actor()
         res = self.client().post('/casts', json={
             "movie_id": movie.id
-        })
+        }, headers=headers)
         if res.status_code != 201:
             self.skipTest("Unable to create cast record, test requirement "
                           "failed")
@@ -273,24 +339,57 @@ class AppTestCase(unittest.TestCase):
         res = self.client().post('/stars', json={
             "cast_id": cast.id,
             "actor_id": actor.id
-        })
+        }, headers=headers)
         data = json.loads(res.data)
         self.assertEqual(res.status_code, 201)
         self.assertEqual(data['success'], True)
 
-    def test_delete_actor_record(self):
-        actor = self.get_actor()
-        res = self.client().delete('/actors/{}'.format(actor.id))
-        actor = self.get_actor()
-        self.assertEqual(res.status_code, 204)
-        self.assertIsNone(actor)
-
-    def test_delete_actor_should_delete_all_actor_assignments(self):
+    def test_create_star_wrong_authorization(self):
+        headers = {"Authorization": "Bearer {}".format(
+            jwt.executive_producer)}
         movie = self.get_movie()
         actor = self.get_actor()
         res = self.client().post('/casts', json={
             "movie_id": movie.id
-        })
+        }, headers=headers)
+        if res.status_code != 201:
+            self.skipTest("Unable to create cast record, test requirement "
+                          "failed")
+        cast = self.get_cast()
+        headers = {"Authorization": "Bearer {}".format(
+            jwt.casting_director)}
+        res = self.client().post('/stars', json={
+            "cast_id": cast.id,
+            "actor_id": actor.id
+        }, headers=headers)
+        self.assertEqual(res.status_code, 403)
+
+    def test_delete_actor_record(self):
+        headers = {"Authorization": "Bearer {}".format(
+            jwt.casting_director)}
+        actor = self.get_actor()
+        res = self.client().delete('/actors/{}'.format(actor.id),
+                                   headers=headers)
+        actor = self.get_actor()
+        self.assertEqual(res.status_code, 204)
+        self.assertIsNone(actor)
+
+    def test_delete_actor_wrong_auth(self):
+        headers = {"Authorization": "Bearer {}".format(
+            jwt.casting_assistance)}
+        actor = self.get_actor()
+        res = self.client().delete('/actors/{}'.format(actor.id),
+                                   headers=headers)
+        self.assertEqual(res.status_code, 403)
+
+    def test_delete_actor_should_delete_all_actor_assignments(self):
+        headers = {"Authorization": "Bearer {}".format(
+            jwt.executive_producer)}
+        movie = self.get_movie()
+        actor = self.get_actor()
+        res = self.client().post('/casts', json={
+            "movie_id": movie.id
+        }, headers=headers)
         if res.status_code != 201:
             self.skipTest("Unable to create cast record, test requirement "
                           "failed")
@@ -298,12 +397,13 @@ class AppTestCase(unittest.TestCase):
         res = self.client().post('/stars', json={
             "cast_id": cast.id,
             "actor_id": actor.id
-        })
+        }, headers=headers)
         if res.status_code != 201:
             self.skipTest("Unable to create star record, test requirement "
                           "failed")
 
-        res = self.client().delete('/actors/{}'.format(actor.id))
+        res = self.client().delete('/actors/{}'.format(actor.id),
+                                   headers=headers)
         actor = self.get_actor()
         stars = self.get_stars()
         self.assertEqual(res.status_code, 204)
@@ -311,11 +411,13 @@ class AppTestCase(unittest.TestCase):
         self.assertFalse(stars)
 
     def test_delete_movie(self):
+        headers = {"Authorization": "Bearer {}".format(
+            jwt.executive_producer)}
         movie = self.get_movie()
         actor = self.get_actor()
         res = self.client().post('/casts', json={
             "movie_id": movie.id
-        })
+        }, headers=headers)
         if res.status_code != 201:
             self.skipTest("Unable to create cast record, test requirement "
                           "failed")
@@ -323,24 +425,53 @@ class AppTestCase(unittest.TestCase):
         res = self.client().post('/stars', json={
             "cast_id": cast.id,
             "actor_id": actor.id
-        })
+        }, headers=headers)
         if res.status_code != 201:
             self.skipTest("Unable to create star record, test requirement "
                           "failed")
 
-        res = self.client().delete('/movies/{}'.format(movie.id))
+        res = self.client().delete('/movies/{}'.format(movie.id),
+                                   headers=headers)
         cast = self.get_cast()
         stars = self.get_stars()
         self.assertEqual(res.status_code, 204)
         self.assertIsNone(cast)
         self.assertFalse(stars)
+
+    def test_delete_movie_wrong_auth(self):
+        headers = {"Authorization": "Bearer {}".format(
+            jwt.executive_producer)}
+        movie = self.get_movie()
+        actor = self.get_actor()
+        res = self.client().post('/casts', json={
+            "movie_id": movie.id
+        }, headers=headers)
+        if res.status_code != 201:
+            self.skipTest("Unable to create cast record, test requirement "
+                          "failed")
+        cast = self.get_cast()
+        res = self.client().post('/stars', json={
+            "cast_id": cast.id,
+            "actor_id": actor.id
+        }, headers=headers)
+        if res.status_code != 201:
+            self.skipTest("Unable to create star record, test requirement "
+                          "failed")
+
+        headers = {"Authorization": "Bearer {}".format(
+            jwt.casting_assistance)}
+        res = self.client().delete('/movies/{}'.format(movie.id),
+                                   headers=headers)
+        self.assertEqual(res.status_code, 403)
 
     def test_delete_cast(self):
+        headers = {"Authorization": "Bearer {}".format(
+            jwt.executive_producer)}
         movie = self.get_movie()
         actor = self.get_actor()
         res = self.client().post('/casts', json={
             "movie_id": movie.id
-        })
+        }, headers=headers)
         if res.status_code != 201:
             self.skipTest("Unable to create cast record, test requirement "
                           "failed")
@@ -348,24 +479,27 @@ class AppTestCase(unittest.TestCase):
         res = self.client().post('/stars', json={
             "cast_id": cast.id,
             "actor_id": actor.id
-        })
+        }, headers=headers)
         if res.status_code != 201:
             self.skipTest("Unable to create star record, test requirement "
                           "failed")
 
-        res = self.client().delete('/casts/{}'.format(cast.id))
+        res = self.client().delete('/casts/{}'.format(cast.id),
+                                   headers=headers)
         cast = self.get_cast()
         stars = self.get_stars()
         self.assertEqual(res.status_code, 204)
         self.assertIsNone(cast)
         self.assertFalse(stars)
 
-    def test_delete_star(self):
+    def test_delete_cast_wrong_auth(self):
+        headers = {"Authorization": "Bearer {}".format(
+            jwt.executive_producer)}
         movie = self.get_movie()
         actor = self.get_actor()
         res = self.client().post('/casts', json={
             "movie_id": movie.id
-        })
+        }, headers=headers)
         if res.status_code != 201:
             self.skipTest("Unable to create cast record, test requirement "
                           "failed")
@@ -373,16 +507,70 @@ class AppTestCase(unittest.TestCase):
         res = self.client().post('/stars', json={
             "cast_id": cast.id,
             "actor_id": actor.id
-        })
+        }, headers=headers)
+        if res.status_code != 201:
+            self.skipTest("Unable to create star record, test requirement "
+                          "failed")
+
+        headers = {"Authorization": "Bearer {}".format(
+            jwt.casting_director)}
+        res = self.client().delete('/casts/{}'.format(cast.id),
+                                   headers=headers)
+        self.assertEqual(res.status_code, 403)
+
+    def test_delete_star(self):
+        headers = {"Authorization": "Bearer {}".format(
+            jwt.executive_producer)}
+        movie = self.get_movie()
+        actor = self.get_actor()
+        res = self.client().post('/casts', json={
+            "movie_id": movie.id
+        }, headers=headers)
+        if res.status_code != 201:
+            self.skipTest("Unable to create cast record, test requirement "
+                          "failed")
+        cast = self.get_cast()
+        res = self.client().post('/stars', json={
+            "cast_id": cast.id,
+            "actor_id": actor.id
+        }, headers=headers)
         if res.status_code != 201:
             self.skipTest("Unable to create star record, test requirement "
                           "failed")
 
         stars = self.get_stars()
-        res = self.client().delete('/stars/{}'.format(stars[0].id))
+        res = self.client().delete('/stars/{}'.format(stars[0].id),
+                                   headers=headers)
         stars = self.get_stars()
         self.assertEqual(res.status_code, 204)
         self.assertFalse(stars)
+
+    def test_delete_star_wrong_auth(self):
+        headers = {"Authorization": "Bearer {}".format(
+            jwt.executive_producer)}
+        movie = self.get_movie()
+        actor = self.get_actor()
+        res = self.client().post('/casts', json={
+            "movie_id": movie.id
+        }, headers=headers)
+        if res.status_code != 201:
+            self.skipTest("Unable to create cast record, test requirement "
+                          "failed")
+        cast = self.get_cast()
+        res = self.client().post('/stars', json={
+            "cast_id": cast.id,
+            "actor_id": actor.id
+        }, headers=headers)
+        if res.status_code != 201:
+            self.skipTest("Unable to create star record, test requirement "
+                          "failed")
+
+        stars = self.get_stars()
+        headers = {"Authorization": "Bearer {}".format(
+            jwt.casting_director)}
+        res = self.client().delete('/stars/{}'.format(stars[0].id),
+                                   headers=headers)
+        self.assertEqual(res.status_code, 403)
 
     def test_get_actor_by_nationality(self):
         nationality = "United States"
@@ -396,11 +584,13 @@ class AppTestCase(unittest.TestCase):
             self.assertEqual(actor['nationality'], nationality)
 
     def test_get_all_movies_with_an_actor(self):
+        headers = {"Authorization": "Bearer {}".format(
+            jwt.executive_producer)}
         movie = self.get_movie()
         actor = self.get_actor()
         res = self.client().post('/casts', json={
             "movie_id": movie.id
-        })
+        }, headers=headers)
         if res.status_code != 201:
             self.skipTest("Unable to create cast record, test requirement "
                           "failed")
@@ -408,21 +598,26 @@ class AppTestCase(unittest.TestCase):
         res = self.client().post('/stars', json={
             "cast_id": cast.id,
             "actor_id": actor.id
-        })
+        }, headers=headers)
         if res.status_code != 201:
             self.skipTest("Unable to create star record, test requirement "
                           "failed")
-        res = self.client().get('/actors/{}/movies'.format(actor.id))
+        headers = {"Authorization": "Bearer {}".format(
+            jwt.casting_assistance)}
+        res = self.client().get('/actors/{}/movies'.format(actor.id),
+                                headers=headers)
         data = json.loads(res.data)
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data['movies'], ['Treadstone'])
 
     def test_get_all_actors_in_a_movie(self):
+        headers = {"Authorization": "Bearer {}".format(
+            jwt.executive_producer)}
         movie = self.get_movie()
         actor = self.get_actor()
         res = self.client().post('/casts', json={
             "movie_id": movie.id
-        })
+        }, headers=headers)
         if res.status_code != 201:
             self.skipTest("Unable to create cast record, test requirement "
                           "failed")
@@ -430,66 +625,102 @@ class AppTestCase(unittest.TestCase):
         res = self.client().post('/stars', json={
             "cast_id": cast.id,
             "actor_id": actor.id
-        })
+        }, headers=headers)
         if res.status_code != 201:
             self.skipTest("Unable to create star record, test requirement "
                           "failed")
 
-        res = self.client().get('/movies/{}/cast'.format(movie.id))
+        headers = {"Authorization": "Bearer {}".format(
+            jwt.casting_assistance)}
+        res = self.client().get('/movies/{}/cast'.format(movie.id),
+                                headers=headers)
         data = json.loads(res.data)
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data['movie'], 'Treadstone')
         self.assertEqual(data['casts'], ['Jeremy Irvine'])
 
     def test_update_actor(self):
+        headers = {"Authorization": "Bearer {}".format(
+            jwt.casting_director)}
         actor = self.get_actor()
         res = self.client().patch('/actors/{}'.format(actor.id), json={
             "age": actor.age,
             "gender": actor.gender,
             "name": actor.name,
             "nationality": "Nigeria"
-        })
+        }, headers=headers)
         actor = self.get_actor()
         self.assertEqual(res.status_code, 200)
         self.assertEqual(actor.nationality, "Nigeria")
 
+    def test_update_actor_wrong_auth(self):
+        headers = {"Authorization": "Bearer {}".format(
+            jwt.casting_assistance)}
+        actor = self.get_actor()
+        res = self.client().patch('/actors/{}'.format(actor.id), json={
+            "age": actor.age,
+            "gender": actor.gender,
+            "name": actor.name,
+            "nationality": "Nigeria"
+        }, headers=headers)
+        self.assertEqual(res.status_code, 403)
+
     def test_negative_update_actor_(self):
+        headers = {"Authorization": "Bearer {}".format(
+            jwt.executive_producer)}
         actor = self.get_actor()
         res = self.client().patch('/actors/100000000', json={
             "age": actor.age,
             "gender": actor.gender,
             "name": actor.name,
             "nationality": "Nigeria"
-        })
+        }, headers=headers)
         data = json.loads(res.data)
         self.assertEqual(res.status_code, 400)
         self.assertEqual(data['message'], "Actor id does not exist")
 
     def test_update_movie(self):
+        headers = {"Authorization": "Bearer {}".format(
+            jwt.casting_director)}
         movie = self.get_movie()
         res = self.client().patch('/movies/{}'.format(movie.id), json={
             "title": movie.title,
             "description": "hello",
             "release_date": str(movie.release_date).replace('-', '/')
-        })
+        }, headers=headers)
         movie = self.get_movie()
         self.assertEqual(res.status_code, 200)
         self.assertEqual(movie.description, "hello")
 
+    def test_update_movie_wrong_auth(self):
+        headers = {"Authorization": "Bearer {}".format(
+            jwt.casting_assistance)}
+        movie = self.get_movie()
+        res = self.client().patch('/movies/{}'.format(movie.id), json={
+            "title": movie.title,
+            "description": "hello",
+            "release_date": str(movie.release_date).replace('-', '/')
+        }, headers=headers)
+        self.assertEqual(res.status_code, 403)
+
     def test_negative_update_movie(self):
+        headers = {"Authorization": "Bearer {}".format(
+            jwt.executive_producer)}
         movie = self.get_movie()
         res = self.client().patch('/movies/{}'.format(movie.id), json={
             "title": movie.title,
             "description": "hello",
             "release_date": movie.release_date
-        })
+        }, headers=headers)
         self.assertEqual(res.status_code, 400)
 
     def test_update_cast(self):
+        headers = {"Authorization": "Bearer {}".format(
+            jwt.executive_producer)}
         movie = self.get_movie()
         res = self.client().post('/casts', json={
             "movie_id": movie.id
-        })
+        }, headers=headers)
         if res.status_code != 201:
             self.skipTest("Unable to create cast record, test requirement "
                           "failed")
@@ -502,14 +733,40 @@ class AppTestCase(unittest.TestCase):
 
         res = self.client().patch('/casts/{}'.format(cast.id), json={
             "movie_id": new_movie.id
-        })
+        }, headers=headers)
         self.assertEqual(res.status_code, 200)
 
-    def test_negative_update_cast(self):
+    def test_update_cast_wrong_auth(self):
+        headers = {"Authorization": "Bearer {}".format(
+            jwt.executive_producer)}
         movie = self.get_movie()
         res = self.client().post('/casts', json={
             "movie_id": movie.id
-        })
+        }, headers=headers)
+        if res.status_code != 201:
+            self.skipTest("Unable to create cast record, test requirement "
+                          "failed")
+        cast = self.get_cast()
+        with self.app.app_context():
+            self.db = SQLAlchemy()
+            self.db.init_app(self.app)
+            new_movie = self.db.session.query(Movies).filter(
+                Movies.title == "Rise of Skywalker").first()
+
+        headers = {"Authorization": "Bearer {}".format(
+            jwt.casting_director)}
+        res = self.client().patch('/casts/{}'.format(cast.id), json={
+            "movie_id": new_movie.id
+        }, headers=headers)
+        self.assertEqual(res.status_code, 403)
+
+    def test_negative_update_cast(self):
+        headers = {"Authorization": "Bearer {}".format(
+            jwt.executive_producer)}
+        movie = self.get_movie()
+        res = self.client().post('/casts', json={
+            "movie_id": movie.id
+        }, headers=headers)
         if res.status_code != 201:
             self.skipTest("Unable to create cast record, test requirement "
                           "failed")
@@ -517,7 +774,7 @@ class AppTestCase(unittest.TestCase):
 
         res = self.client().patch('/casts/{}'.format(cast.id), json={
             "movie_id": 100000000
-        })
+        }, headers=headers)
         self.assertEqual(res.status_code, 400)
 
     def get_movie(self):
