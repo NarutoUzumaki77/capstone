@@ -3,6 +3,7 @@ import json
 
 from app import create_app
 from model import *
+import jwt
 
 
 class AppTestCase(unittest.TestCase):
@@ -384,14 +385,15 @@ class AppTestCase(unittest.TestCase):
         self.assertFalse(stars)
 
     def test_get_actor_by_nationality(self):
-        with self.app.app_context():
-            nationality = "United States"
-            self.db = SQLAlchemy()
-            self.db.init_app(self.app)
-            actors = db.session.query(Actors).filter(Actors.nationality
-                                                     == nationality).all()
-        for actor in actors:
-            self.assertEqual(actor.nationality, nationality)
+        nationality = "United States"
+        headers = {"Authorization": "Bearer {}".format(
+            jwt.casting_assistance)}
+        res = self.client().get('/actors/nationality/{}'.format(nationality),
+                                headers=headers)
+        self.assertEqual(res.status_code, 200)
+        data = json.loads(res.data)
+        for actor in data['actors']:
+            self.assertEqual(actor['nationality'], nationality)
 
     def test_get_all_movies_with_an_actor(self):
         movie = self.get_movie()

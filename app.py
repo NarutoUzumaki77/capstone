@@ -4,6 +4,8 @@ from model import *
 from datetime import datetime
 from sqlalchemy.exc import IntegrityError
 
+from auth.auth import AuthError, requires_auth
+
 
 def create_app(test_config=None):
     app = Flask(__name__)
@@ -20,6 +22,7 @@ def create_app(test_config=None):
         return response
 
     @app.route('/actors')
+    @requires_auth('get:actors')
     def get_actors():
         actors = db.session.query(Actors).all()
         formatted_msg = [actor.format() for actor in actors]
@@ -29,6 +32,7 @@ def create_app(test_config=None):
         }), 200
 
     @app.route('/actors/<int:actor_id>')
+    @requires_auth('get:actors')
     def get_actor_by_id(actor_id):
         actor = db.session.query(Actors).get(actor_id)
         formatted_msg = None
@@ -40,6 +44,7 @@ def create_app(test_config=None):
         }), 200
 
     @app.route('/actors/nationality/<string:nationality>')
+    @requires_auth('get:actors')
     def get_actor_by_nationality(nationality):
         actors = db.session.query(Actors).filter(
             Actors.nationality == nationality).all()
@@ -52,6 +57,7 @@ def create_app(test_config=None):
         }), 200
 
     @app.route('/actors/<int:actor_id>/movies')
+    @requires_auth('get:actors')
     def get_all_movies_with_actor(actor_id):
         movies_title = []
         if not record_exist(Actors, actor_id):
@@ -70,6 +76,7 @@ def create_app(test_config=None):
         })
 
     @app.route('/movies')
+    @requires_auth('get:movies')
     def get_movies():
         movies = db.session.query(Movies).all()
         formatted_msg = [movie.format() for movie in movies]
@@ -79,6 +86,7 @@ def create_app(test_config=None):
         }), 200
 
     @app.route('/movies/<int:movies_id>')
+    @requires_auth('get:movies')
     def get_movies_by_id(movies_id):
         movie = db.session.query(Movies).get(movies_id)
         formatted_msg = None
@@ -90,6 +98,7 @@ def create_app(test_config=None):
         }), 200
 
     @app.route('/movies/<int:movie_id>/cast')
+    @requires_auth('get:movies')
     def get_movie_casts(movie_id):
         if not record_exist(Movies, movie_id):
             abort(400, "Movie id does not exist")
@@ -420,15 +429,15 @@ def create_app(test_config=None):
             'message': "Internal Server Error"
         }), 500
 
-    # @app.errorhandler(AuthError)
-    # def auth_error(error):
-    #     msg = error.args
-    #     message = msg[0]
-    #     status_code = msg[1]
-    #     return jsonify({
-    #         "success": False,
-    #         "message": message.get('description')
-    #     }), status_code
+    @app.errorhandler(AuthError)
+    def auth_error(error):
+        msg = error.args
+        message = msg[0]
+        status_code = msg[1]
+        return jsonify({
+            "success": False,
+            "message": message.get('description')
+        }), status_code
 
     def record_exist(db_table, record_id):
         return db.session.query(db_table).get(record_id) is not None
