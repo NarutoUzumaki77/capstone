@@ -78,25 +78,43 @@ class AppTestCase(unittest.TestCase):
             self.db.session.commit()
 
     def test_create_movie_record(self):
+        headers = {"Authorization": "Bearer {}".format(
+            jwt.executive_producer)}
         res = self.client().post('/movies', json={
             "title": "1917",
             "description": "During World War I, two British soldiers -- "
                            "Lance Cpl. Schofield and Lance Cpl. Blake -- "
                            "receive seemingly impossible orders",
             "release_date": "2020/1/12"
-        })
+        }, headers=headers)
         data = json.loads(res.data)
         self.assertEqual(res.status_code, 201)
         self.assertEqual(data['success'], True)
 
+    def test_create_movie_wrong_auth(self):
+        headers = {"Authorization": "Bearer {}".format(
+            jwt.casting_director)}
+        res = self.client().post('/movies', json={
+            "title": "1917",
+            "description": "During World War I, two British soldiers -- "
+                           "Lance Cpl. Schofield and Lance Cpl. Blake -- "
+                           "receive seemingly impossible orders",
+            "release_date": "2020/1/12"
+        }, headers=headers)
+        data = json.loads(res.data)
+        self.assertEqual(res.status_code, 403)
+        self.assertEqual(data['message'], "Permission Denied")
+
     def test_create_movie_wrong_release_date(self):
+        headers = {"Authorization": "Bearer {}".format(
+            jwt.executive_producer)}
         res = self.client().post('/movies', json={
             "title": "1917",
             "description": "During World War I, two British soldiers -- "
                            "Lance Cpl. Schofield and Lance Cpl. Blake -- "
                            "receive seemingly impossible orders",
             "release_date": "2020/1/e"
-        })
+        }, headers=headers)
         data = json.loads(res.data)
         self.assertEqual(res.status_code, 400)
         self.assertEqual(data['success'], False)
