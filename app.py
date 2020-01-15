@@ -6,9 +6,10 @@ from sqlalchemy.exc import IntegrityError
 
 from auth.auth import AuthError, requires_auth
 
+app = Flask(__name__)
+
 
 def create_app(test_config=None):
-    app = Flask(__name__)
     setup_db(app)
 
     CORS(app, resources={r"/*": {"origins": "*"}})
