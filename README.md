@@ -447,7 +447,18 @@ PATCH '/stars/{star_id}'
 ```
 
 ## Testing
-To run the tests, run
+
+Three Users is created on Autho with the following login information
+
+- Casting Assistance (assistance@example.com, $UPER$ecure)
+- Casting Director (director@example.com, $UPER$ecure)
+- Executive Producer (producer@example.com, $UPER$ecure)
+
+https://dev-b1cng-y2.auth0.com/authorize?audience=casting&response_type=token&client_id=exb7AX3JP0m7yiooiiYHkbP0J8hiRqw3&redirect_uri=http://localhost:8080/login-results
+
+Copy the url above and login to generate valid token for each role based user
+
+To run the tests, NB: Update the jwt.py with valid tokens then run
 ```
 dropdb capstone_test
 createdb capstone_test
