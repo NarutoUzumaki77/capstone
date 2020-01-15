@@ -62,6 +62,7 @@ The Casting Agency models a company that is responsible for creating movies and 
 2. `Actor` table holds actor information, and have a one to many relationship with `Starring` table
 3. `Casts` table allows the user to assign a cast to a movie, and have a one to many relationship with `Starring` table
 4. `Starring` table allows the user to assign an actor to a cast
+5. Cascading is enabled, deleting a parent will delete all child relationship, delete a movie will delete the cast id
 
 ## REST Resource
 
@@ -325,109 +326,125 @@ GET '/stars/{star_id}'
 }
 ```
 
-
-
-
-POST '/questions'
-- Creates a question
+POST '/movies'
+- Creates a movie record
 - Request Arguments: None
 - Returns: 201 response
-- Sample: curl -data '{"question":"What is my name", "answer": "John", "category": "2", "difficulty": "3"}' -H "Content-Type: application/json" -X ttp://http://127.0.0.1:5000/questions
+- Sample: curl -data '{"release_date":"2020/03/02", "title": "Treadstone", "description": "This is a movie"}' -H "Content-Type: application/json" -X http://127.0.0.1:5000/movies
 ```
 {
   "success": true
 }
 ```
 
-POST '/questions'
-- Get questions based on a search term, search is case insensitive
+POST '/actors'
+- Creates an actor record
 - Request Arguments: None
-- Sample: curl -d '{"searchTerm":"vinci"}' -H "Content-Type: application/json" -X POST http://127.0.0.1:5000/questions
-```
-{
-  "currentCategory": {
-    "id": 1,
-    "type": "Art"
-  },
-  "questions": [
-    {
-      "answer": "Vinci",
-      "category": "1",
-      "difficulty": 3,
-      "id": 1,
-      "question": "In which town was Leonardo da Vinci born?"
-    }
-  ],
-  "success": true,
-  "total_questions": 1
-}
-```
-
-GET '/categories/{categoryId}/questions'
-- Fetches questions based on category
-- Request Arguments: None
-- Returns: An object with keys (questions, current_category, success, total_questions)
-- Sample: http://127.0.0.1:5000/categories/4/questions
-```
-{
-  "current_category": {
-    "id": 4,
-    "type": "History"
-  },
-  "questions": [
-    {
-      "answer": "Muhammad Ali",
-      "category": 4,
-      "difficulty": 1,
-      "id": 9,
-      "question": "What boxer's original name is Cassius Clay?"
-    },
-    {
-      "answer": "George Washington Carver",
-      "category": 4,
-      "difficulty": 2,
-      "id": 12,
-      "question": "Who invented Peanut Butter?"
-    },
-    {
-      "answer": "Scarab",
-      "category": 4,
-      "difficulty": 4,
-      "id": 23,
-      "question": "Which dung beetle was worshipped by the ancient Egyptians?"
-    }
-  ],
-  "success": true,
-  "total_questions": 3
-}
-```
-
-POST '/quizzes'
-- Fetches questions to play the quiz
-- Request Body: json with two keys(quiz_category, previous_questions), category id and a list of previous question ids
-- Return: A random question within the given category, if provided, and that is not one of the previous questions
-- Sample: http://127.0.0.1:5000/quizzes
-```
-{
-  "question": {
-    "answer": "Vulture",
-    "category": "5",
-    "difficulty": 4,
-    "id": 6,
-    "question": "In Disney’s The Jungle Book what kind of animal is Ringo? Monkey, snake, vulture, elephant"
-  }
-}
-```
-
-DELETE '/questions/{questionId}'
-- Deletes a question
-- Sample: http://127.0.0.1:5000/questions/5
+- Returns: 201 response
+- Sample: curl -data '{"name":"Gilbert", "age": 23, "gender": "male", "nationality: "Canada}' -H "Content-Type: application/json" -X http://127.0.0.1:5000/actors
 ```
 {
   "success": true
 }
 ```
 
+POST '/casts'
+- Assign a case to a movie
+- Request Arguments: None
+- Returns: 201 response
+- Sample: curl -data '{"movie_id": 2}' -H "Content-Type: application/json" -X http://127.0.0.1:5000/casts
+```
+{
+  "success": true
+}
+```
+
+POST '/stars'
+- Assign an actor to a cast
+- Request Arguments: None
+- Returns: 201 response
+- Sample: curl -data '{"cast_id": 2, "actor_id": 4}' -H "Content-Type: application/json" -X http://127.0.0.1:5000/stars
+```
+{
+  "success": true
+}
+```
+
+DELETE '/actors/{actor_id}'
+- Delete actor by id
+- Returns: 204 empty response
+- Sample: http://127.0.0.1:5000/actors/3
+```
+{}
+```
+
+DELETE '/movies/{movies_id}'
+- Delete movie by id
+- Returns: 204 empty response
+- Sample: http://127.0.0.1:5000/movies/4
+```
+{}
+```
+
+DELETE '/casts/{cast_id}'
+- Delete cast by id
+- Returns: 204 empty response
+- Sample: http://127.0.0.1:5000/casts/4
+```
+{}
+```
+
+DELETE '/stars/{star_id}'
+- Delete star by id
+- Returns: 204 empty response
+- Sample: http://127.0.0.1:5000/stars/4
+```
+{}
+```
+
+PATCH '/movies/{movie_id}'
+- Updates a movie record
+- Request Arguments: None
+- Returns: 200 response
+- Sample: curl -data '{"release_date":"2020/03/02", "title": "Treadstone", "description": "This is a movie"}' -H "Content-Type: application/json" -X http://127.0.0.1:5000/movies/2
+```
+{
+  "success": true
+}
+```
+
+PATCH '/actors/{actor_id}'
+- Updates an actor record
+- Request Arguments: None
+- Returns: 200 response
+- Sample: curl -data '{"name":"Gilbert", "age": 23, "gender": "male", "nationality: "Canada}' -H "Content-Type: application/json" -X http://127.0.0.1:5000/actors/3
+```
+{
+  "success": true
+}
+```
+
+PATCH '/casts/{cast_id}'
+- Update a case by id
+- Request Arguments: None
+- Returns: 200 response
+- Sample: curl -data '{"movie_id": 2}' -H "Content-Type: application/json" -X http://127.0.0.1:5000/casts/45
+```
+{
+  "success": true
+}
+```
+
+PATCH '/stars/{star_id}'
+- Update an actor assigned to a cast
+- Request Arguments: None
+- Returns: 200 response
+- Sample: curl -data '{"cast_id": 2, "actor_id": 4}' -H "Content-Type: application/json" -X http://127.0.0.1:5000/stars/34
+```
+{
+  "success": true
+}
+```
 
 ## Testing
 To run the tests, run
