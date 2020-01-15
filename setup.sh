@@ -1,2 +1,4 @@
 export AUTH0_DOMAIN=dev-b1cng-y2.auth0.com
 export API_AUDIENCE=casting
+export CLIENT_ID=exb7AX3JP0m7yiooiiYHkbP0J8hiRqw3
+export CLIENT_SECRET=RfpSlR0PR6QYzdjoAB-lBcQn8kf0Z26Pmlfkv-oCrqvF5omRYtnXEJyoly64UfFV
