@@ -34,12 +34,15 @@ Ensure you are working using your created virtual environment.
 
 **Create DB**
 ```
-createdb capstone
+createdb <db_name>
 ```
 
 To run the server, execute:
 
 ```bash
+export AUTH0_DOMAIN=dev-b1cng-y2.auth0.com
+export API_AUDIENCE=casting
+export DATABASE_URL=postgres://gilbertnwankwo@localhost:5432/<db_name>
 export FLASK_APP=app.py
 export FLASK_ENV=development
 flask run
@@ -67,7 +70,8 @@ The Casting Agency models a company that is responsible for creating movies and 
 ## REST Resource
 
 **Getting Started**
-- Base URL: This app is hosted locally and the default url is http://127.0.0.1:5000/
+- Base URL: This app is hosted remotely on heroku and the default url is 
+https://capstone-fsdn.herokuapp.com/
 - Authentication: This version of the application requires authentication via Auth0. Bearer Token jwt is required to make requests to this API endpoints, see the roles above
 
 **Error Handling**
@@ -94,7 +98,7 @@ GET '/actors'
 - Request Arguments: None
 - Authorization: Bearer Token
 - Returns: a list of actors 
-- Sample: curl http://127.0.0.1:5000/actors
+- Sample: curl https://capstone-fsdn.herokuapp.com/actors
 ```
 {
     "actors": [
@@ -136,7 +140,7 @@ GET '/actors/{actor_id}'
 - Request Arguments: None
 - Authorization: Bearer Token
 - Returns: an actor by id 
-- Sample: curl http://127.0.0.1:5000/actors/2
+- Sample: curl https://capstone-fsdn.herokuapp.com/actors/2
 ```
 {
     "actor": {
@@ -155,7 +159,7 @@ GET '/actors/nationality/{nationality}'
 - Request Arguments: None
 - Authorization: Bearer Token
 - Returns: a list of actors of given nationality
-- Sample: curl http://127.0.0.1:5000/actors/nationality/Nigeria
+- Sample: curl https://capstone-fsdn.herokuapp.com/actors/nationality/Nigeria
 ```
 {
     "actors": [
@@ -176,7 +180,7 @@ GET 'actors/{actor_id}/movies'
 - Request Arguments: None
 - Authorization: Bearer Token
 - Returns: a list of movie titles
-- Sample: curl http://127.0.0.1:5000/actors/2/movies
+- Sample: curl https://capstone-fsdn.herokuapp.com/actors/2/movies
 ```
 {
     "movies": [
@@ -191,7 +195,7 @@ GET '/movies'
 - Request Arguments: None
 - Authorization: Bearer Token
 - Returns: a list of movies with descriptions
-- Sample: curl http://127.0.0.1:5000/movies
+- Sample: curl https://capstone-fsdn.herokuapp.com/movies
 ```
 {
     "movies": [
@@ -217,7 +221,7 @@ GET '/movies/{movie_id}'
 - Request Arguments: None
 - Authorization: Bearer Token
 - Returns: a movie by id
-- Sample: curl http://127.0.0.1:5000/movies/4
+- Sample: curl https://capstone-fsdn.herokuapp.com/movies/4
 ```
 {
     "movie": {
@@ -235,7 +239,7 @@ GET '/movies/{movie_id}/cast'
 - Request Arguments: None
 - Authorization: Bearer Token
 - Returns: cast list for a movie
-- Sample: curl http://127.0.0.1:5000/movies/4/cast
+- Sample: curl https://capstone-fsdn.herokuapp.com/movies/4/cast
 ```
 {
     "casts": [
@@ -252,7 +256,7 @@ GET '/casts'
 - Request Arguments: None
 - Authorization: Bearer Token
 - Returns: a list of all casts
-- Sample: curl http://127.0.0.1:5000/casts
+- Sample: curl https://capstone-fsdn.herokuapp.com/casts
 ```
 {
     "casts": [
@@ -274,7 +278,7 @@ GET '/casts/{cast_id}'
 - Request Arguments: None
 - Authorization: Bearer Token
 - Returns: cast by id
-- Sample: curl http://127.0.0.1:5000/casts/4
+- Sample: curl https://capstone-fsdn.herokuapp.com/casts/4
 ```
 {
     "cast": {
@@ -290,7 +294,7 @@ GET '/stars'
 - Request Arguments: None
 - Authorization: Bearer Token
 - Returns: a list of all stars
-- Sample: curl http://127.0.0.1:5000/stars
+- Sample: curl https://capstone-fsdn.herokuapp.com/stars
 ```
 {
     "stars": [
@@ -314,7 +318,7 @@ GET '/stars/{star_id}'
 - Request Arguments: None
 - Authorization: Bearer Token
 - Returns: star by id
-- Sample: curl http://127.0.0.1:5000/stars/7
+- Sample: curl https://capstone-fsdn.herokuapp.com/stars/7
 ```
 {
     "star": {
@@ -330,7 +334,7 @@ POST '/movies'
 - Creates a movie record
 - Request Arguments: None
 - Returns: 201 response
-- Sample: curl -data '{"release_date":"2020/03/02", "title": "Treadstone", "description": "This is a movie"}' -H "Content-Type: application/json" -X http://127.0.0.1:5000/movies
+- Sample: curl -data '{"release_date":"2020/03/02", "title": "Treadstone", "description": "This is a movie"}' -H "Content-Type: application/json" -X https://capstone-fsdn.herokuapp.com/movies
 ```
 {
   "success": true
@@ -341,7 +345,7 @@ POST '/actors'
 - Creates an actor record
 - Request Arguments: None
 - Returns: 201 response
-- Sample: curl -data '{"name":"Gilbert", "age": 23, "gender": "male", "nationality: "Canada}' -H "Content-Type: application/json" -X http://127.0.0.1:5000/actors
+- Sample: curl -data '{"name":"Gilbert", "age": 23, "gender": "male", "nationality: "Canada}' -H "Content-Type: application/json" -X https://capstone-fsdn.herokuapp.com/actors
 ```
 {
   "success": true
@@ -352,7 +356,7 @@ POST '/casts'
 - Assign a case to a movie
 - Request Arguments: None
 - Returns: 201 response
-- Sample: curl -data '{"movie_id": 2}' -H "Content-Type: application/json" -X http://127.0.0.1:5000/casts
+- Sample: curl -data '{"movie_id": 2}' -H "Content-Type: application/json" -X https://capstone-fsdn.herokuapp.com/casts
 ```
 {
   "success": true
@@ -363,7 +367,7 @@ POST '/stars'
 - Assign an actor to a cast
 - Request Arguments: None
 - Returns: 201 response
-- Sample: curl -data '{"cast_id": 2, "actor_id": 4}' -H "Content-Type: application/json" -X http://127.0.0.1:5000/stars
+- Sample: curl -data '{"cast_id": 2, "actor_id": 4}' -H "Content-Type: application/json" -X https://capstone-fsdn.herokuapp.com/stars
 ```
 {
   "success": true
@@ -373,7 +377,7 @@ POST '/stars'
 DELETE '/actors/{actor_id}'
 - Delete actor by id
 - Returns: 204 empty response
-- Sample: http://127.0.0.1:5000/actors/3
+- Sample: https://capstone-fsdn.herokuapp.com/actors/3
 ```
 {}
 ```
@@ -381,7 +385,7 @@ DELETE '/actors/{actor_id}'
 DELETE '/movies/{movies_id}'
 - Delete movie by id
 - Returns: 204 empty response
-- Sample: http://127.0.0.1:5000/movies/4
+- Sample: https://capstone-fsdn.herokuapp.com/movies/4
 ```
 {}
 ```
@@ -389,7 +393,7 @@ DELETE '/movies/{movies_id}'
 DELETE '/casts/{cast_id}'
 - Delete cast by id
 - Returns: 204 empty response
-- Sample: http://127.0.0.1:5000/casts/4
+- Sample: https://capstone-fsdn.herokuapp.com/casts/4
 ```
 {}
 ```
@@ -397,7 +401,7 @@ DELETE '/casts/{cast_id}'
 DELETE '/stars/{star_id}'
 - Delete star by id
 - Returns: 204 empty response
-- Sample: http://127.0.0.1:5000/stars/4
+- Sample: https://capstone-fsdn.herokuapp.com/stars/4
 ```
 {}
 ```
@@ -406,7 +410,7 @@ PATCH '/movies/{movie_id}'
 - Updates a movie record
 - Request Arguments: None
 - Returns: 200 response
-- Sample: curl -data '{"release_date":"2020/03/02", "title": "Treadstone", "description": "This is a movie"}' -H "Content-Type: application/json" -X http://127.0.0.1:5000/movies/2
+- Sample: curl -data '{"release_date":"2020/03/02", "title": "Treadstone", "description": "This is a movie"}' -H "Content-Type: application/json" -X https://capstone-fsdn.herokuapp.com/movies/2
 ```
 {
   "success": true
@@ -417,7 +421,7 @@ PATCH '/actors/{actor_id}'
 - Updates an actor record
 - Request Arguments: None
 - Returns: 200 response
-- Sample: curl -data '{"name":"Gilbert", "age": 23, "gender": "male", "nationality: "Canada}' -H "Content-Type: application/json" -X http://127.0.0.1:5000/actors/3
+- Sample: curl -data '{"name":"Gilbert", "age": 23, "gender": "male", "nationality: "Canada}' -H "Content-Type: application/json" -X https://capstone-fsdn.herokuapp.com/actors/3
 ```
 {
   "success": true
@@ -428,7 +432,7 @@ PATCH '/casts/{cast_id}'
 - Update a case by id
 - Request Arguments: None
 - Returns: 200 response
-- Sample: curl -data '{"movie_id": 2}' -H "Content-Type: application/json" -X http://127.0.0.1:5000/casts/45
+- Sample: curl -data '{"movie_id": 2}' -H "Content-Type: application/json" -X https://capstone-fsdn.herokuapp.com/casts/45
 ```
 {
   "success": true
@@ -439,7 +443,7 @@ PATCH '/stars/{star_id}'
 - Update an actor assigned to a cast
 - Request Arguments: None
 - Returns: 200 response
-- Sample: curl -data '{"cast_id": 2, "actor_id": 4}' -H "Content-Type: application/json" -X http://127.0.0.1:5000/stars/34
+- Sample: curl -data '{"cast_id": 2, "actor_id": 4}' -H "Content-Type: application/json" -X https://capstone-fsdn.herokuapp.com/stars/34
 ```
 {
   "success": true
@@ -465,6 +469,3 @@ createdb capstone_test
 python3 -m unittest test_app.py
 ```
 
-## Live Server
-
-https://capstone-fsdn.herokuapp.com/ deployed to Heroku

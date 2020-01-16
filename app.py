@@ -6,10 +6,9 @@ from sqlalchemy.exc import IntegrityError
 
 from auth.auth import AuthError, requires_auth
 
-app = Flask(__name__)
-
 
 def create_app(test_config=None):
+    app = Flask(__name__)
     setup_db(app)
 
     CORS(app, resources={r"/*": {"origins": "*"}})
@@ -25,6 +24,9 @@ def create_app(test_config=None):
     @app.route('/actors')
     @requires_auth('get:actors')
     def get_actors():
+        """
+        Fetches all actor record
+        """
         actors = db.session.query(Actors).all()
         formatted_msg = [actor.format() for actor in actors]
         return jsonify({
@@ -35,6 +37,14 @@ def create_app(test_config=None):
     @app.route('/actors/<int:actor_id>')
     @requires_auth('get:actors')
     def get_actor_by_id(actor_id):
+        """
+        Fetches actor record by id
+
+        :param actor_id: actor id
+        :type actor_id: int
+        :return: jsonify object
+        :rtype: jsonify
+        """
         actor = db.session.query(Actors).get(actor_id)
         formatted_msg = None
         if actor:
@@ -47,6 +57,14 @@ def create_app(test_config=None):
     @app.route('/actors/nationality/<string:nationality>')
     @requires_auth('get:actors')
     def get_actor_by_nationality(nationality):
+        """
+        Fetches actors record filtered by nationality
+
+        :param nationality: actor nationality to filterby
+        :type nationality: str
+        :return: jsonify object
+        :rtype: jsonify
+        """
         actors = db.session.query(Actors).filter(
             Actors.nationality == nationality).all()
         formatted_msg = []
@@ -60,6 +78,14 @@ def create_app(test_config=None):
     @app.route('/actors/<int:actor_id>/movies')
     @requires_auth('get:actors')
     def get_all_movies_with_actor(actor_id):
+        """
+        Fetches all movies actor starred in
+
+        :param actor_id: actor id
+        :type actor_id: int
+        :return: jsonify object
+        :rtype: jsonify
+        """
         movies_title = []
         if not record_exist(Actors, actor_id):
             abort(400, "Actor id does not exist")
@@ -79,6 +105,12 @@ def create_app(test_config=None):
     @app.route('/movies')
     @requires_auth('get:movies')
     def get_movies():
+        """
+        Fectch all movies
+
+        :return: jsonify object
+        :rtype: jsonify
+        """
         movies = db.session.query(Movies).all()
         formatted_msg = [movie.format() for movie in movies]
         return jsonify({
@@ -89,6 +121,14 @@ def create_app(test_config=None):
     @app.route('/movies/<int:movies_id>')
     @requires_auth('get:movies')
     def get_movies_by_id(movies_id):
+        """
+        Fetch movies by id
+
+        :param movies_id: movie id
+        :type movies_id: int
+        :return: jsonify object
+        :rtype: jsonify
+        """
         movie = db.session.query(Movies).get(movies_id)
         formatted_msg = None
         if movie:
@@ -101,6 +141,14 @@ def create_app(test_config=None):
     @app.route('/movies/<int:movie_id>/cast')
     @requires_auth('get:movies')
     def get_movie_casts(movie_id):
+        """
+        Fetch all the cast for a movie specified by movie id
+
+        :param movies_id: movie id
+        :type movies_id: int
+        :return: jsonify object
+        :rtype: jsonify
+        """
         if not record_exist(Movies, movie_id):
             abort(400, "Movie id does not exist")
 
@@ -130,6 +178,12 @@ def create_app(test_config=None):
     @app.route('/casts')
     @requires_auth('get:casts')
     def get_casts():
+        """
+        Fectch all casts
+
+        :return: jsonify object
+        :rtype: jsonify
+        """
         casts = db.session.query(Casts).all()
         formatted_msg = [cast.format() for cast in casts]
         return jsonify({
@@ -140,6 +194,14 @@ def create_app(test_config=None):
     @app.route('/casts/<int:cast_id>')
     @requires_auth('get:casts')
     def get_casts_by_id(cast_id):
+        """
+        Fetch cast by id
+
+        :param cast_id: cast id
+        :type cast_id: int
+        :return: jsonify object
+        :rtype: jsonify
+        """
         cast = db.session.query(Casts).get(cast_id)
         formatted_msg = None
         if cast:
@@ -152,6 +214,13 @@ def create_app(test_config=None):
     @app.route('/stars')
     @requires_auth('get:stars')
     def get_starring():
+        """
+        Fetch all actor assignment to cast
+
+
+        :return: jsonify object
+        :rtype: jsonify
+        """
         starrings = db.session.query(Starring).all()
         formatted_msg = [star.format() for star in starrings]
         return jsonify({
@@ -162,6 +231,14 @@ def create_app(test_config=None):
     @app.route('/stars/<int:starring_id>')
     @requires_auth('get:stars')
     def get_starring_by_id(starring_id):
+        """
+        Fectch actor assignment to cast by id
+
+        :param starring_id: star id
+        :type starring_id: int
+        :return: jsonify object
+        :rtype: jsonify
+        """
         star = db.session.query(Starring).get(starring_id)
         formatted_msg = None
         if star:
@@ -174,6 +251,12 @@ def create_app(test_config=None):
     @app.route('/movies', methods=['POST'])
     @requires_auth('post:movies')
     def create_movie():
+        """
+        Create movie record
+
+        :return: jsonify object
+        :rtype: jsonify
+        """
         request_body = request.json
         try:
             release_date = request_body.get('release_date')
@@ -196,6 +279,12 @@ def create_app(test_config=None):
     @app.route('/casts', methods=['POST'])
     @requires_auth('post:casts')
     def create_movie_casts():
+        """
+        Create cast record
+
+        :return: jsonify object
+        :rtype: jsonify
+        """
         request_body = request.json
         movie_id = request_body.get('movie_id')
         if not record_exist(Movies, movie_id):
@@ -215,6 +304,12 @@ def create_app(test_config=None):
     @app.route('/actors', methods=['POST'])
     @requires_auth('post:actors')
     def create_actor():
+        """
+        Create actor record
+
+        :return: jsonify object
+        :rtype: jsonify
+        """
         try:
             age = request.json.get('age')
             age = int(age)
@@ -245,6 +340,12 @@ def create_app(test_config=None):
     @app.route('/stars', methods=['POST'])
     @requires_auth('post:stars')
     def assign_actor_to_movie():
+        """
+        Create actor assignment to cast record
+
+        :return: jsonify object
+        :rtype: jsonify
+        """
         cast_id = request.json.get('cast_id')
         actor_id = request.json.get('actor_id')
         if not record_exist(Casts, cast_id):
@@ -271,6 +372,14 @@ def create_app(test_config=None):
     @app.route('/movies/<int:movie_id>', methods=['DELETE'])
     @requires_auth('delete:movies')
     def delete_movie(movie_id):
+        """
+        Delete movie record
+
+        :param movie_id: movie id
+        :type movie_id: int
+        :return: jsonify object
+        :rtype: jsonify
+        """
         if not record_exist(Movies, movie_id):
             return abort(400, "Movie id does not exist")
         movie = db.session.query(Movies).get(movie_id)
@@ -281,6 +390,14 @@ def create_app(test_config=None):
     @app.route('/actors/<int:actor_id>', methods=['DELETE'])
     @requires_auth('delete:actors')
     def delete_actor(actor_id):
+        """
+        Delete actor
+
+        :param actor_id: actor id
+        :type actor_id: int
+        :return: jsonify object
+        :rtype: jsonify
+        """
         if not record_exist(Actors, actor_id):
             return abort(400, "Actor id does not exist")
         actor = db.session.query(Actors).get(actor_id)
@@ -291,6 +408,14 @@ def create_app(test_config=None):
     @app.route('/casts/<int:cast_id>', methods=['DELETE'])
     @requires_auth('delete:casts')
     def delete_cast(cast_id):
+        """
+        Delete cast
+
+        :param cast_id: cast id
+        :type cast_id: int
+        :return: jsonify object
+        :rtype: jsonify
+        """
         if not record_exist(Casts, cast_id):
             return abort(400, "Cast id does not exist")
         cast = db.session.query(Casts).get(cast_id)
@@ -301,6 +426,14 @@ def create_app(test_config=None):
     @app.route('/stars/<int:star_id>', methods=['DELETE'])
     @requires_auth('delete:stars')
     def delete_star(star_id):
+        """
+        Delete actor assignment to a cast
+
+        :param star_id: star id
+        :type star_id: int
+        :return: jsonify object
+        :rtype: jsonify
+        """
         if not record_exist(Starring, star_id):
             return abort(400, "Star id does not exist")
         star = db.session.query(Starring).get(star_id)
@@ -311,6 +444,14 @@ def create_app(test_config=None):
     @app.route('/actors/<actor_id>', methods=['PATCH'])
     @requires_auth('patch:actors')
     def update_actors(actor_id):
+        """
+        Update actor record
+
+        :param actor_id: actor id
+        :type actor_id: int
+        :return: jsonify object
+        :rtype: jsonify
+        """
         if not record_exist(Actors, actor_id):
             return abort(400, "Actor id does not exist")
         actor = db.session.query(Actors).get(actor_id)
@@ -340,6 +481,14 @@ def create_app(test_config=None):
     @app.route('/movies/<movie_id>', methods=['PATCH'])
     @requires_auth('patch:movies')
     def update_movie(movie_id):
+        """
+        Update movie record
+
+        :param movie_id: movie id
+        :type movie_id: int
+        :return: jsonify object
+        :rtype: jsonify
+        """
         request_body = request.json
         if not record_exist(Movies, movie_id):
             return abort(400, "Movie id does not exist")
@@ -365,6 +514,14 @@ def create_app(test_config=None):
     @app.route('/casts/<cast_id>', methods=['PATCH'])
     @requires_auth('patch:casts')
     def update_casts(cast_id):
+        """
+        Update movie record
+
+        :param cast_id: cast id
+        :type cast_id: int
+        :return: jsonify object
+        :rtype: jsonify
+        """
         request_body = request.json
         movie_id = request_body.get('movie_id')
         if not record_exist(Movies, movie_id):
@@ -384,6 +541,14 @@ def create_app(test_config=None):
     @app.route('/stars/<star_id>', methods=['PATCH'])
     @requires_auth('patch:stars')
     def update_stars(star_id):
+        """
+        Update star record
+
+        :param star_id: star id
+        :type star_id: int
+        :return: jsonify object
+        :rtype: jsonify
+        """
         cast_id = request.json.get('cast_id')
         actor_id = request.json.get('actor')
         if not record_exist(Casts, cast_id):
